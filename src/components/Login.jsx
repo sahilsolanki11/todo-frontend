@@ -31,7 +31,7 @@ const Login = () => {
       boxShadow: '0px 4px 10px rgba(0,0,0,0.1)',
       fontFamily: 'Arial, sans-serif'
     }}>
-      <h2 style={{ textAlign: 'center', color: '#007bff', marginBottom: '20px' }}>Loginn</h2>
+      <h2 style={{ textAlign: 'center', color: '#007bff', marginBottom: '20px' }}>Loginnnnnnnnnnn</h2>
       <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <input
           type="email"
@@ -58,7 +58,7 @@ const Login = () => {
           borderRadius: '5px',
           cursor: 'pointer'
         }}>
-          Login
+          Loginnnnnnnnnnnnnnnnnnnnn
         </button>
       </form>
       <p style={{ textAlign: 'center', marginTop: '15px' }}>
