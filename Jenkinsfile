@@ -19,11 +19,11 @@ pipeline {
         stage('Deploy Container') {
             steps {
                 script {
-                    bat '''
+                    bat """
                     docker stop todo-frontend || exit 0
                     docker rm todo-frontend || exit 0
-                    docker run -d -p 3000:80 --name todo-frontend todo-frontend
-                    '''
+                    docker run -d -p 3000:80 --name todo-frontend todo-frontend:latest
+                    """
                 }
             }
         }
