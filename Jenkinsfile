@@ -11,7 +11,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    bat 'docker build -t todo-frontend .'
+                    bat 'docker build -t todo-frontend:latest .'
                 }
             }
         }
@@ -30,13 +30,15 @@ pipeline {
 
         stage('Approval for Production') {
             steps {
-                input "UAT testing done? Deploy frontend to Production?"
+                input "✅ UAT testing done? Deploy frontend to Production?"
             }
         }
 
         stage('Deploy to Production') {
             steps {
                 script {
+                    // Save old production container as backup before new deploy
+                    bat "docker commit todo-frontend-prod todo-frontend:previous || exit 0"
                     bat """
                     docker stop todo-frontend-prod || exit 0
                     docker rm todo-frontend-prod || exit 0
@@ -44,6 +46,22 @@ pipeline {
                     """
                 }
             }
+        }
+    }
+
+    post {
+        failure {
+            echo '❌ Frontend deployment failed! Rolling back...'
+            script {
+                bat """
+                docker stop todo-frontend-prod || exit 0
+                docker rm todo-frontend-prod || exit 0
+                docker run -d -p 3000:80 --name todo-frontend-prod todo-frontend:previous || exit 0
+                """
+            }
+        }
+        success {
+            echo '✅ Frontend pipeline finished successfully!'
         }
     }
 }
