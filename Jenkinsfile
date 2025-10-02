@@ -1,4 +1,4 @@
-pipeline {
+pipeline { 
     agent any
 
     stages {
@@ -16,13 +16,31 @@ pipeline {
             }
         }
 
-        stage('Deploy Container') {
+        stage('Deploy to UAT') {
             steps {
                 script {
                     bat """
-                    docker stop todo-frontend || exit 0
-                    docker rm todo-frontend || exit 0
-                    docker run -d -p 3000:80 --name todo-frontend todo-frontend:latest
+                    docker stop todo-frontend-uat || exit 0
+                    docker rm todo-frontend-uat || exit 0
+                    docker run -d -p 8081:80 --name todo-frontend-uat todo-frontend:latest
+                    """
+                }
+            }
+        }
+
+        stage('Approval for Production') {
+            steps {
+                input "UAT testing done? Deploy frontend to Production?"
+            }
+        }
+
+        stage('Deploy to Production') {
+            steps {
+                script {
+                    bat """
+                    docker stop todo-frontend-prod || exit 0
+                    docker rm todo-frontend-prod || exit 0
+                    docker run -d -p 3000:80 --name todo-frontend-prod todo-frontend:latest
                     """
                 }
             }
