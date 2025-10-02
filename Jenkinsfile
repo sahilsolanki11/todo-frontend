@@ -11,7 +11,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    bat 'docker build -t todo-frontend:latest .'
+                    bat 'docker build -t todo-frontend .'
                 }
             }
         }
@@ -19,11 +19,11 @@ pipeline {
         stage('Deploy to UAT') {
             steps {
                 script {
-                    bat """
+                    bat '''
                     docker stop todo-frontend-uat || exit 0
                     docker rm todo-frontend-uat || exit 0
                     docker run -d -p 8081:80 --name todo-frontend-uat todo-frontend:latest
-                    """
+                    '''
                 }
             }
         }
@@ -37,31 +37,30 @@ pipeline {
         stage('Deploy to Production') {
             steps {
                 script {
-                    // Save old production container as backup before new deploy
-                    bat "docker commit todo-frontend-prod todo-frontend:previous || exit 0"
-                    bat """
+                    bat '''
+                    docker commit todo-frontend-prod todo-frontend:previous || exit 0
                     docker stop todo-frontend-prod || exit 0
                     docker rm todo-frontend-prod || exit 0
                     docker run -d -p 3000:80 --name todo-frontend-prod todo-frontend:latest
-                    """
+                    '''
                 }
             }
         }
     }
 
     post {
+        success {
+            echo "✅ Frontend pipeline finished successfully!"
+        }
         failure {
-            echo '❌ Frontend deployment failed! Rolling back...'
+            echo "❌ Frontend deployment failed! Rolling back..."
             script {
-                bat """
+                bat '''
                 docker stop todo-frontend-prod || exit 0
                 docker rm todo-frontend-prod || exit 0
                 docker run -d -p 3000:80 --name todo-frontend-prod todo-frontend:previous || exit 0
-                """
+                '''
             }
-        }
-        success {
-            echo '✅ Frontend pipeline finished successfully!'
         }
     }
 }
