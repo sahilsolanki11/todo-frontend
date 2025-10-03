@@ -17,12 +17,10 @@ pipeline {
         stage('Build UAT Docker Image') {
             steps {
                 script {
-                    bat '''
-                    REM Use UAT API URL
-                    echo REACT_APP_API_URL=http://localhost:5001 > .env
-                    npm run build
-                    docker build -t todo-frontend:uat .
-                    '''
+                    // Create .env for UAT before build
+                    bat 'echo REACT_APP_API_URL=http://localhost:5001 > .env'
+                    bat 'npm run build'
+                    bat 'docker build -t todo-frontend:uat .'   // ✅ Tag as UAT
                 }
             }
         }
@@ -48,12 +46,10 @@ pipeline {
         stage('Build Production Docker Image') {
             steps {
                 script {
-                    bat '''
-                    REM Use Production API URL
-                    echo REACT_APP_API_URL=http://localhost:5000 > .env
-                    npm run build
-                    docker build -t todo-frontend:prod .
-                    '''
+                    // Create .env for Production before build
+                    bat 'echo REACT_APP_API_URL=http://localhost:5000 > .env'
+                    bat 'npm run build'
+                    bat 'docker build -t todo-frontend:prod .'   // ✅ Tag as Production
                 }
             }
         }
