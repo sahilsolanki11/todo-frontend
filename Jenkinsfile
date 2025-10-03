@@ -1,4 +1,4 @@
-pipeline { 
+pipeline {
     agent any
 
     stages {
@@ -8,10 +8,21 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Install Dependencies') {
+            steps {
+                bat 'npm install'
+            }
+        }
+
+        stage('Build UAT Docker Image') {
             steps {
                 script {
-                    bat 'docker build -t todo-frontend .'
+                    bat '''
+                    REM Use UAT API URL
+                    echo REACT_APP_API_URL=http://localhost:5001 > .env
+                    npm run build
+                    docker build -t todo-frontend:uat .
+                    '''
                 }
             }
         }
@@ -22,7 +33,7 @@ pipeline {
                     bat '''
                     docker stop todo-frontend-uat || exit 0
                     docker rm todo-frontend-uat || exit 0
-                    docker run -d -p 8081:80 --name todo-frontend-uat todo-frontend:latest
+                    docker run -d -p 8081:80 --name todo-frontend-uat todo-frontend:uat
                     '''
                 }
             }
@@ -34,6 +45,19 @@ pipeline {
             }
         }
 
+        stage('Build Production Docker Image') {
+            steps {
+                script {
+                    bat '''
+                    REM Use Production API URL
+                    echo REACT_APP_API_URL=http://localhost:5000 > .env
+                    npm run build
+                    docker build -t todo-frontend:prod .
+                    '''
+                }
+            }
+        }
+
         stage('Deploy to Production') {
             steps {
                 script {
@@ -41,7 +65,7 @@ pipeline {
                     docker commit todo-frontend-prod todo-frontend:previous || exit 0
                     docker stop todo-frontend-prod || exit 0
                     docker rm todo-frontend-prod || exit 0
-                    docker run -d -p 3000:80 --name todo-frontend-prod todo-frontend:latest
+                    docker run -d -p 3000:80 --name todo-frontend-prod todo-frontend:prod
                     '''
                 }
             }
