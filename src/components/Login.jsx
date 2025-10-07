@@ -10,10 +10,12 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // ✅ Corrected API URL
-      const res = await axios.post('http://localhost:5000/api/users/login', { email, password });
+      // ✅ Use environment variable instead of hardcoded 5000
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/users/login`, { email, password });
+      
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('username', res.data.user.username);
+
       navigate('/todos');
     } catch (err) {
       console.error(err);
@@ -31,7 +33,7 @@ const Login = () => {
       boxShadow: '0px 4px 10px rgba(0,0,0,0.1)',
       fontFamily: 'Arial, sans-serif'
     }}>
-      <h2 style={{ textAlign: 'center', color: '#007bff', marginBottom: '20px' }}>login</h2>
+      <h2 style={{ textAlign: 'center', color: '#007bff', marginBottom: '20px' }}>Login</h2>
       <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <input
           type="email"
@@ -58,7 +60,7 @@ const Login = () => {
           borderRadius: '5px',
           cursor: 'pointer'
         }}>
-       login
+          my test login
         </button>
       </form>
       <p style={{ textAlign: 'center', marginTop: '15px' }}>
