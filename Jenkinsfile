@@ -12,7 +12,7 @@ pipeline {
             steps {
                 script {
                     echo "⚙️ Building Frontend UAT Docker Image"
-                    // ✅ Point frontend to backend running on host (Docker-safe)
+                    // ✅ Use host.docker.internal for backend access from container
                     bat '''
                     echo REACT_APP_API_URL=http://host.docker.internal:5001/api > .env
                     '''
@@ -30,7 +30,7 @@ pipeline {
                     bat '''
                     docker stop todo-frontend-uat || exit 0
                     docker rm todo-frontend-uat || exit 0
-                    docker run -d -p 8081:80 --name todo-frontend-uat todo-frontend:uat
+                    docker run -d -p 8081:80 --add-host=host.docker.internal:host-gateway --name todo-frontend-uat todo-frontend:uat
                     '''
                 }
             }
@@ -63,7 +63,7 @@ pipeline {
                     bat '''
                     docker stop todo-frontend-prod || exit 0
                     docker rm todo-frontend-prod || exit 0
-                    docker run -d -p 3000:80 --name todo-frontend-prod todo-frontend:prod
+                    docker run -d -p 3000:80 --add-host=host.docker.internal:host-gateway --name todo-frontend-prod todo-frontend:prod
                     '''
                 }
             }
@@ -75,7 +75,7 @@ pipeline {
             echo "✅ Frontend pipeline finished successfully!"
         }
         failure {
-            echo "❌ Frontend deployment failed! Rolling back last version..."
+            echo "❌ Frontend deployment failed!"
         }
     }
 }
