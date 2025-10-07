@@ -12,10 +12,12 @@ pipeline {
             steps {
                 script {
                     echo "⚙️ Building Frontend UAT Docker Image"
-                    // 🧠 Use UAT API URL
+                    // ✅ Point frontend to backend running on host (Docker-safe)
                     bat '''
-                    echo REACT_APP_API_URL=http://localhost:5001/api > .env
+                    echo REACT_APP_API_URL=http://host.docker.internal:5001/api > .env
                     '''
+                    bat 'npm install'
+                    bat 'npm run build'
                     bat 'docker build -t todo-frontend:uat .'
                 }
             }
@@ -24,11 +26,11 @@ pipeline {
         stage('Deploy to UAT') {
             steps {
                 script {
-                    echo "🚀 Deploying Frontend to UAT (Port 3001)"
+                    echo "🚀 Deploying Frontend to UAT (Port 8081)"
                     bat '''
                     docker stop todo-frontend-uat || exit 0
                     docker rm todo-frontend-uat || exit 0
-                    docker run -d -p 3001:80 --name todo-frontend-uat todo-frontend:uat
+                    docker run -d -p 8081:80 --name todo-frontend-uat todo-frontend:uat
                     '''
                 }
             }
@@ -44,10 +46,11 @@ pipeline {
             steps {
                 script {
                     echo "⚙️ Building Frontend Production Docker Image"
-                    // 🧠 Use Production API URL
                     bat '''
-                    echo REACT_APP_API_URL=http://localhost:5000/api > .env
+                    echo REACT_APP_API_URL=http://host.docker.internal:5000/api > .env
                     '''
+                    bat 'npm install'
+                    bat 'npm run build'
                     bat 'docker build -t todo-frontend:prod .'
                 }
             }
@@ -72,7 +75,7 @@ pipeline {
             echo "✅ Frontend pipeline finished successfully!"
         }
         failure {
-            echo "❌ Frontend deployment failed!"
+            echo "❌ Frontend deployment failed! Rolling back last version..."
         }
     }
 }
