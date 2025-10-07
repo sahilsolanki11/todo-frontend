@@ -12,12 +12,10 @@ pipeline {
             steps {
                 script {
                     echo "⚙️ Building Frontend UAT Docker Image"
-                    // ✅ Use host.docker.internal for backend access from container
+                    // ✅ Use backend container name instead of localhost
                     bat '''
-                    echo REACT_APP_API_URL=http://host.docker.internal:5001/api > .env
+                    echo REACT_APP_API_URL=http://todo-backend-uat:5000/api > .env
                     '''
-                    bat 'npm install'
-                    bat 'npm run build'
                     bat 'docker build -t todo-frontend:uat .'
                 }
             }
@@ -27,10 +25,13 @@ pipeline {
             steps {
                 script {
                     echo "🚀 Deploying Frontend to UAT (Port 8081)"
+                    // ✅ Connect frontend to same Docker network as backend
                     bat '''
                     docker stop todo-frontend-uat || exit 0
                     docker rm todo-frontend-uat || exit 0
-                    docker run -d -p 8081:80 --add-host=host.docker.internal:host-gateway --name todo-frontend-uat todo-frontend:uat
+                    docker network create todo-net || exit 0
+                    docker network connect todo-net todo-backend-uat || exit 0
+                    docker run -d -p 8081:80 --name todo-frontend-uat --network todo-net todo-frontend:uat
                     '''
                 }
             }
@@ -46,11 +47,10 @@ pipeline {
             steps {
                 script {
                     echo "⚙️ Building Frontend Production Docker Image"
+                    // ✅ Same logic for production
                     bat '''
-                    echo REACT_APP_API_URL=http://host.docker.internal:5000/api > .env
+                    echo REACT_APP_API_URL=http://todo-backend-prod:5000/api > .env
                     '''
-                    bat 'npm install'
-                    bat 'npm run build'
                     bat 'docker build -t todo-frontend:prod .'
                 }
             }
@@ -59,11 +59,13 @@ pipeline {
         stage('Deploy to Production') {
             steps {
                 script {
-                    echo "🚀 Deploying Frontend to Production (Port 3000)"
+                    echo "🚀 Deploying Frontend to Production (Port 8080)"
                     bat '''
                     docker stop todo-frontend-prod || exit 0
                     docker rm todo-frontend-prod || exit 0
-                    docker run -d -p 3000:80 --add-host=host.docker.internal:host-gateway --name todo-frontend-prod todo-frontend:prod
+                    docker network create todo-net || exit 0
+                    docker network connect todo-net todo-backend-prod || exit 0
+                    docker run -d -p 8080:80 --name todo-frontend-prod --network todo-net todo-frontend:prod
                     '''
                 }
             }
