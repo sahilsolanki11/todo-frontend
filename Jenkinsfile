@@ -14,7 +14,7 @@ pipeline {
                     echo "⚙️ Building Frontend UAT Docker Image"
                     // 🧠 Use internal Docker backend name (not localhost)
                     bat '''
-                    echo REACT_APP_API_URL=http://todo-backend-uat:5000/api > .env
+                    echo REACT_APP_API_URL=http://todo-backend-uat:5000 > .env
                     '''
                     bat 'docker build -t todo-frontend:uat .'
                 }
