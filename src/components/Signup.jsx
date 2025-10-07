@@ -11,14 +11,18 @@ const Signup = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-     await axios.post(`${process.env.REACT_APP_API_URL}/api/users/signup`, { username, email, password });
-
+      // ✅ Correct API path
+      await axios.post(`${process.env.REACT_APP_API_URL}/auth/signup`, {
+        username,
+        email,
+        password,
+      });
 
       alert('Signup successful! Please login.');
       navigate('/login');
     } catch (err) {
-      console.error(err);
-      alert('Signup failed. Email may already be in use.');
+      console.error('Signup Error:', err);
+      alert('Signup failed. Email may already be in use or server unavailable.');
     }
   };
 

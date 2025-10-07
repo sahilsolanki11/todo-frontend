@@ -10,16 +10,21 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // ✅ Use environment variable instead of hardcoded 5000
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/users/login`, { email, password });
+      // ✅ Correct API URL and path
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, { 
+        email, 
+        password 
+      });
       
+      // ✅ Save token and username
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('username', res.data.user.username);
 
+      // ✅ Redirect to todos page
       navigate('/todos');
     } catch (err) {
       console.error(err);
-      alert('Login failed. Check your credentials.');
+      alert('Login failed. Check your credentials or backend connection.');
     }
   };
 
@@ -60,11 +65,11 @@ const Login = () => {
           borderRadius: '5px',
           cursor: 'pointer'
         }}>
-          my test login
+          Login
         </button>
       </form>
       <p style={{ textAlign: 'center', marginTop: '15px' }}>
-        Don't have an account? <Link to="/signup" style={{ color: '#007bff' }}>Sign Up</Link>
+        Don’t have an account? <Link to="/signup" style={{ color: '#007bff' }}>Sign Up</Link>
       </p>
     </div>
   );
