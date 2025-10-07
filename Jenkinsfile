@@ -8,24 +8,71 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build UAT Docker Image') {
             steps {
                 script {
-                    bat 'docker build -t todo-frontend .'
+                    echo "⚙️ Building Frontend UAT Docker Image"
+                    // 🧠 Use UAT API URL
+                    bat '''
+                    echo REACT_APP_API_URL=http://localhost:5001/api > .env
+                    '''
+                    bat 'docker build -t todo-frontend:uat .'
                 }
             }
         }
 
-        stage('Deploy Container') {
+        stage('Deploy to UAT') {
             steps {
                 script {
-                    bat """
-                    docker stop todo-frontend || exit 0
-                    docker rm todo-frontend || exit 0
-                    docker run -d -p 3000:80 --name todo-frontend todo-frontend:latest
-                    """
+                    echo "🚀 Deploying Frontend to UAT (Port 3001)"
+                    bat '''
+                    docker stop todo-frontend-uat || exit 0
+                    docker rm todo-frontend-uat || exit 0
+                    docker run -d -p 3001:80 --name todo-frontend-uat todo-frontend:uat
+                    '''
                 }
             }
+        }
+
+        stage('Approval for Production') {
+            steps {
+                input "✅ UAT testing done? Deploy frontend to Production?"
+            }
+        }
+
+        stage('Build Production Docker Image') {
+            steps {
+                script {
+                    echo "⚙️ Building Frontend Production Docker Image"
+                    // 🧠 Use Production API URL
+                    bat '''
+                    echo REACT_APP_API_URL=http://localhost:5000/api > .env
+                    '''
+                    bat 'docker build -t todo-frontend:prod .'
+                }
+            }
+        }
+
+        stage('Deploy to Production') {
+            steps {
+                script {
+                    echo "🚀 Deploying Frontend to Production (Port 3000)"
+                    bat '''
+                    docker stop todo-frontend-prod || exit 0
+                    docker rm todo-frontend-prod || exit 0
+                    docker run -d -p 3000:80 --name todo-frontend-prod todo-frontend:prod
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Frontend pipeline finished successfully!"
+        }
+        failure {
+            echo "❌ Frontend deployment failed!"
         }
     }
 }

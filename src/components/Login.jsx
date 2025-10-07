@@ -58,7 +58,7 @@ const Login = () => {
           borderRadius: '5px',
           cursor: 'pointer'
         }}>
-          my test login
+       login
         </button>
       </form>
       <p style={{ textAlign: 'center', marginTop: '15px' }}>
