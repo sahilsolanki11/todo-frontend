@@ -12,11 +12,7 @@ const Signup = () => {
     e.preventDefault();
     try {
       // ✅ Correct API path
-      await axios.post(`${process.env.REACT_APP_API_URL}/auth/signup`, {
-        username,
-        email,
-        password,
-      });
+      await axios.post(`${process.env.REACT_APP_API_URL}/signup`, { username, email, password });
 
       alert('Signup successful! Please login.');
       navigate('/login');
