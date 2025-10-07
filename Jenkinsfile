@@ -12,7 +12,7 @@ pipeline {
             steps {
                 script {
                     echo "⚙️ Building Frontend UAT Docker Image"
-                    // 🧠 Internal Docker URL (not localhost)
+                    // 🧠 Use internal Docker backend name (not localhost)
                     bat '''
                     echo REACT_APP_API_URL=http://todo-backend-uat:5000/api > .env
                     '''
@@ -44,8 +44,9 @@ pipeline {
             steps {
                 script {
                     echo "⚙️ Building Frontend Production Docker Image"
+                    // 🧠 Use the production backend container name
                     bat '''
-                    echo REACT_APP_API_URL=http://todo-backend-uat:5000/api > .env
+                    echo REACT_APP_API_URL=http://todo-backend-prod:5000/api > .env
                     '''
                     bat 'docker build -t todo-frontend:prod .'
                 }
