@@ -11,10 +11,7 @@ const Login = () => {
     e.preventDefault();
     try {
       // ✅ Correct API URL and path
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, { 
-        email, 
-        password 
-      });
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/login`, { email, password });
       
       // ✅ Save token and username
       localStorage.setItem('token', res.data.token);
