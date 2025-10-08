@@ -12,9 +12,10 @@ pipeline {
             steps {
                 script {
                     echo "⚙️ Building Frontend UAT Docker Image"
-                    // ✅ Internal Docker backend URL
+                    // ✅ Corrected API base URL (no /auth)
                     bat '''
-                    echo REACT_APP_API_URL=http://todo-backend-uat:5000/api/auth > .env
+                    echo REACT_APP_ENV=uat > .env
+                    echo REACT_APP_API_URL=http://todo-backend-uat:5000/api >> .env
                     '''
                     bat 'docker build -t todo-frontend:uat .'
                 }
@@ -44,8 +45,10 @@ pipeline {
             steps {
                 script {
                     echo "⚙️ Building Frontend Production Docker Image"
+                    // ✅ Corrected API base URL (no /auth)
                     bat '''
-                    echo REACT_APP_API_URL=http://todo-backend-prod:5000/api/auth > .env
+                    echo REACT_APP_ENV=prod > .env
+                    echo REACT_APP_API_URL=http://todo-backend-prod:5000/api >> .env
                     '''
                     bat 'docker build -t todo-frontend:prod .'
                 }
