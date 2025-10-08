@@ -10,20 +10,20 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // ✅ Correct API URL and path
+      // ✅ Correct backend route for your project
       const res = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, { 
         email, 
         password 
       });
-      
-      // ✅ Save token and username
+
+      // ✅ Save token and username locally
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('username', res.data.user.username);
 
-      // ✅ Redirect to todos page
+      // ✅ Redirect to todos page after success
       navigate('/todos');
     } catch (err) {
-      console.error(err);
+      console.error('Login Error:', err);
       alert('Login failed. Check your credentials or backend connection.');
     }
   };
