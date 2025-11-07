@@ -15,7 +15,6 @@ pipeline {
                     sh '''
                     echo "REACT_APP_ENV=uat" > .env
                     echo "REACT_APP_API_URL=http://todo-backend-uat:5000/api" >> .env
-
                     docker build -t todo-frontend:uat .
                     '''
                 }
@@ -25,7 +24,7 @@ pipeline {
         stage('Deploy to UAT') {
             steps {
                 script {
-                    echo "🚀 Deploying Frontend UAT (Port 8081)"
+                    echo "🚀 Deploying Frontend to UAT (Port 8081)"
                     sh '''
                     docker stop todo-frontend-uat || true
                     docker rm todo-frontend-uat || true
@@ -48,7 +47,6 @@ pipeline {
                     sh '''
                     echo "REACT_APP_ENV=prod" > .env
                     echo "REACT_APP_API_URL=http://todo-backend-prod:5000/api" >> .env
-
                     docker build -t todo-frontend:prod .
                     '''
                 }
