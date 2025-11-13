@@ -10,8 +10,10 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // ✅ Correct backend route for your project
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, { 
+      // ✅ Use environment variable OR fallback to localhost
+      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
+
+      const res = await axios.post(`${API_URL}/login`, { 
         email, 
         password 
       });
