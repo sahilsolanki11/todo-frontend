@@ -20,7 +20,8 @@ const TodoList = () => {
 
     const fetchTodos = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/todos', {
+        const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
+        const res = await axios.get(`${API_URL}/api/todos`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTodos(res.data);
@@ -37,8 +38,9 @@ const TodoList = () => {
     e.preventDefault();
     if (!newTask) return;
     try {
+      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
       const res = await axios.post(
-        'http://localhost:5000/api/todos',
+        `${API_URL}/api/todos`,
         { task: newTask },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -52,8 +54,9 @@ const TodoList = () => {
 
   const toggleCompleted = async (id, completed) => {
     try {
+      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
       const res = await axios.put(
-        `http://localhost:5000/api/todos/${id}`,
+        `${API_URL}/api/todos/${id}`,
         { completed: !completed },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -66,7 +69,8 @@ const TodoList = () => {
 
   const deleteTodo = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/todos/${id}`, {
+      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
+      await axios.delete(`${API_URL}/api/todos/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTodos(todos.filter((todo) => todo._id !== id));
@@ -83,8 +87,9 @@ const TodoList = () => {
 
   const saveEdit = async (id) => {
     try {
+      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
       const res = await axios.put(
-        `http://localhost:5000/api/todos/${id}`,
+        `${API_URL}/api/todos/${id}`,
         { task: editingText },
         { headers: { Authorization: `Bearer ${token}` } }
       );
