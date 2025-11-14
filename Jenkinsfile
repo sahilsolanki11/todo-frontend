@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        REACT_APP_API_URL_UAT = credentials('frontend_api_url_uat')    // optional
+        REACT_APP_API_URL_PROD = credentials('frontend_api_url_prod')  // optional
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -14,6 +19,7 @@ pipeline {
                     echo "⚙️ Building Frontend UAT Docker Image"
                     sh '''
                     echo "REACT_APP_ENV=uat" > .env
+                    # Use credentials if needed, otherwise keep hardcoded internal API
                     echo "REACT_APP_API_URL=http://todo-backend-uat:5000/api" >> .env
                     docker build -t todo-frontend:uat .
                     '''
