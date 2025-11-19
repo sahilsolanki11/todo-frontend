@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        REACT_APP_API_URL_UAT = credentials('frontend_api_url_uat')    // optional
-        REACT_APP_API_URL_PROD = credentials('frontend_api_url_prod')  // optional
+        REACT_APP_API_URL_UAT  = credentials('frontend_api_url_uat')
+        REACT_APP_API_URL_PROD = credentials('frontend_api_url_prod')
     }
 
     stages {
@@ -13,16 +13,22 @@ pipeline {
             }
         }
 
+        stage('Prepare .env for UAT') {
+            steps {
+                script {
+                    sh """
+                    echo "REACT_APP_ENV=uat" > .env
+                    echo "REACT_APP_API_URL=${REACT_APP_API_URL_UAT}" >> .env
+                    """
+                }
+            }
+        }
+
         stage('Build UAT Docker Image') {
             steps {
                 script {
                     echo "⚙️ Building Frontend UAT Docker Image"
-                    sh '''
-                    echo "REACT_APP_ENV=uat" > .env
-                    # Use credentials if needed, otherwise keep hardcoded internal API
-                    echo "REACT_APP_API_URL=http://todo-backend-uat:5000/api" >> .env
-                    docker build -t todo-frontend:uat .
-                    '''
+                    sh 'docker build -t todo-frontend:uat .'
                 }
             }
         }
@@ -30,12 +36,16 @@ pipeline {
         stage('Deploy to UAT') {
             steps {
                 script {
-                    echo "🚀 Deploying Frontend to UAT (Port 8081)"
-                    sh '''
+                    echo "🚀 Deploying Frontend to UAT"
+                    sh """
                     docker stop todo-frontend-uat || true
                     docker rm todo-frontend-uat || true
-                    docker run -d -p 8081:80 --name todo-frontend-uat --network todo-net todo-frontend:uat
-                    '''
+                    docker run -d \
+                      --name todo-frontend-uat \
+                      --network todo-net \
+                      -p 8081:80 \
+                      todo-frontend:uat
+                    """
                 }
             }
         }
@@ -46,15 +56,22 @@ pipeline {
             }
         }
 
+        stage('Prepare .env for Prod') {
+            steps {
+                script {
+                    sh """
+                    echo "REACT_APP_ENV=prod" > .env
+                    echo "REACT_APP_API_URL=${REACT_APP_API_URL_PROD}" >> .env
+                    """
+                }
+            }
+        }
+
         stage('Build Production Docker Image') {
             steps {
                 script {
                     echo "⚙️ Building Frontend Production Docker Image"
-                    sh '''
-                    echo "REACT_APP_ENV=prod" > .env
-                    echo "REACT_APP_API_URL=http://todo-backend-prod:5000/api" >> .env
-                    docker build -t todo-frontend:prod .
-                    '''
+                    sh 'docker build -t todo-frontend:prod .'
                 }
             }
         }
@@ -62,12 +79,16 @@ pipeline {
         stage('Deploy to Production') {
             steps {
                 script {
-                    echo "🚀 Deploying Frontend Production (Port 3000)"
-                    sh '''
+                    echo "🚀 Deploying Frontend Production"
+                    sh """
                     docker stop todo-frontend-prod || true
                     docker rm todo-frontend-prod || true
-                    docker run -d -p 3000:80 --name todo-frontend-prod --network todo-net todo-frontend:prod
-                    '''
+                    docker run -d \
+                      --name todo-frontend-prod \
+                      --network todo-net \
+                      -p 3000:80 \
+                      todo-frontend:prod
+                    """
                 }
             }
         }
