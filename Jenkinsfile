@@ -5,7 +5,6 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                // Use dev or main depending on job name
                 git branch: 'dev', url: 'https://github.com/sahilsolanki11/todo-frontend.git'
             }
         }
@@ -17,7 +16,7 @@ pipeline {
                     sh '''
                     rm -f .env
                     echo "REACT_APP_ENV=uat" > .env
-                    echo "REACT_APP_API_URL=http://todo-backend-uat:5000/api" >> .env
+                    echo "REACT_APP_API_URL=http://localhost:5001/api/auth" >> .env
                     
                     echo "⚙️ Building Docker image for UAT"
                     docker build -t todo-frontend:uat .
@@ -57,7 +56,7 @@ pipeline {
                     sh '''
                     rm -f .env
                     echo "REACT_APP_ENV=production" > .env
-                    echo "REACT_APP_API_URL=http://todo-backend-prod:5000/api" >> .env
+                    echo "REACT_APP_API_URL=http://localhost:5000/api/auth" >> .env
 
                     docker build -t todo-frontend:prod .
                     '''
