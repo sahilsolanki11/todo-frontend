@@ -13,8 +13,10 @@ pipeline {
                 script {
                     echo "⚙️ Building Frontend UAT Docker Image"
                     sh '''
+                    rm -f .env
                     echo "REACT_APP_ENV=uat" > .env
-                    echo "REACT_APP_API_URL=http://172.30.31.245:5001/api" >> .env
+                    echo "REACT_APP_API_URL=http://localhost:5001" >> .env
+                    
                     docker build -t todo-frontend:uat .
                     '''
                 }
@@ -28,7 +30,12 @@ pipeline {
                     sh '''
                     docker stop todo-frontend-uat || true
                     docker rm todo-frontend-uat || true
-                    docker run -d -p 8081:80 --name todo-frontend-uat --network todo-net todo-frontend:uat
+
+                    docker run -d \
+                      -p 8081:80 \
+                      --name todo-frontend-uat \
+                      --network todo-net \
+                      todo-frontend:uat
                     '''
                 }
             }
@@ -45,8 +52,10 @@ pipeline {
                 script {
                     echo "⚙️ Building Frontend Production Docker Image"
                     sh '''
+                    rm -f .env
                     echo "REACT_APP_ENV=prod" > .env
-                    echo "REACT_APP_API_URL=http://172.30.31.245:5000/api" >> .env
+                    echo "REACT_APP_API_URL=http://localhost:5000" >> .env
+
                     docker build -t todo-frontend:prod .
                     '''
                 }
@@ -60,7 +69,12 @@ pipeline {
                     sh '''
                     docker stop todo-frontend-prod || true
                     docker rm todo-frontend-prod || true
-                    docker run -d -p 3000:80 --name todo-frontend-prod --network todo-net todo-frontend:prod
+
+                    docker run -d \
+                      -p 3000:80 \
+                      --name todo-frontend-prod \
+                      --network todo-net \
+                      todo-frontend:prod
                     '''
                 }
             }
