@@ -1,29 +1,22 @@
-pipeline { 
+pipeline {
     agent any
 
     stages {
 
-        /* -------------------------------------------
-           🔹 Checkout Frontend Code
-        -------------------------------------------- */
         stage('Checkout') {
             steps {
                 git branch: 'dev', url: 'https://github.com/sahilsolanki11/todo-frontend.git'
             }
         }
 
-        /* -------------------------------------------
-           🔵 UAT BUILD
-        -------------------------------------------- */
         stage('Build UAT Docker Image') {
             steps {
                 script {
-                    echo "⚙️ Generating UAT .env"
+                    echo "⚙️ Generating UAT environment .env file"
                     sh '''
                     rm -f .env
                     echo "REACT_APP_ENV=uat" > .env
-                    # Base API URL, frontend will append /auth or /todos
-                    echo "REACT_APP_API_URL=http://localhost:5001/api" >> .env
+                    echo "REACT_APP_API_URL=http://localhost:5001/api/auth" >> .env
                     
                     echo "⚙️ Building Docker image for UAT"
                     docker build -t todo-frontend:uat .
@@ -50,28 +43,21 @@ pipeline {
             }
         }
 
-        /* -------------------------------------------
-           🔺 Approval for Production
-        -------------------------------------------- */
         stage('Approval for Production') {
             steps {
                 input "✔ UAT looks good? Deploy frontend to Production?"
             }
         }
 
-        /* -------------------------------------------
-           🔴 PRODUCTION BUILD
-        -------------------------------------------- */
         stage('Build Production Docker Image') {
             steps {
                 script {
-                    echo "⚙️ Generating Production .env"
+                    echo "⚙️ Building Production Docker Image"
                     sh '''
                     rm -f .env
                     echo "REACT_APP_ENV=production" > .env
-                    echo "REACT_APP_API_URL=http://localhost:5000/api" >> .env
-                    
-                    echo "⚙️ Building Docker image for PROD"
+                    echo "REACT_APP_API_URL=http://localhost:5000/api/auth" >> .env
+
                     docker build -t todo-frontend:prod .
                     '''
                 }
@@ -81,7 +67,7 @@ pipeline {
         stage('Deploy to Production') {
             steps {
                 script {
-                    echo "🚀 Deploying Frontend to PRODUCTION (Port 3000)"
+                    echo "🚀 Deploying Frontend to Production (Port 3000)"
                     sh '''
                     docker stop todo-frontend-prod || true
                     docker rm todo-frontend-prod || true
