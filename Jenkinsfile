@@ -16,8 +16,10 @@ pipeline {
                     sh '''
                     rm -f .env
                     echo "REACT_APP_ENV=uat" > .env
-                    echo "REACT_APP_API_URL=http://todo-backend-uat:5000" >> .env
-                    
+
+                    # ✅ FIXED: Correct API base URL
+                    echo "REACT_APP_API_URL=http://localhost:5001/api" >> .env
+
                     echo "⚙️ Building Docker image for UAT"
                     docker build -t todo-frontend:uat .
                     '''
@@ -56,7 +58,9 @@ pipeline {
                     sh '''
                     rm -f .env
                     echo "REACT_APP_ENV=production" > .env
-                    echo "REACT_APP_API_URL=http://todo-backend-prod:5000" >> .env
+
+                    # ✅ FIXED: Correct API base URL for prod
+                    echo "REACT_APP_API_URL=http://localhost:5000/api" >> .env
 
                     docker build -t todo-frontend:prod .
                     '''
