@@ -20,9 +20,9 @@ const TodoList = () => {
 
     const fetchTodos = async () => {
       try {
-        // Remove '/auth' from the base URL for todos
-        const BASE_API_URL = process.env.REACT_APP_API_URL.replace('/auth','') || "http://localhost:5001";
-        const res = await axios.get(`${BASE_API_URL}/todos`, {
+        // Todos API: remove '/auth' only for Todo endpoints
+        const TODOS_API_URL = (process.env.REACT_APP_API_URL || "http://localhost:5001").replace('/auth','');
+        const res = await axios.get(`${TODOS_API_URL}/todos`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTodos(res.data);
@@ -39,9 +39,9 @@ const TodoList = () => {
     e.preventDefault();
     if (!newTask) return;
     try {
-      const BASE_API_URL = process.env.REACT_APP_API_URL.replace('/auth','') || "http://localhost:5001";
+      const TODOS_API_URL = (process.env.REACT_APP_API_URL || "http://localhost:5001").replace('/auth','');
       const res = await axios.post(
-        `${BASE_API_URL}/todos`,
+        `${TODOS_API_URL}/todos`,
         { task: newTask },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -55,9 +55,9 @@ const TodoList = () => {
 
   const toggleCompleted = async (id, completed) => {
     try {
-      const BASE_API_URL = process.env.REACT_APP_API_URL.replace('/auth','') || "http://localhost:5001";
+      const TODOS_API_URL = (process.env.REACT_APP_API_URL || "http://localhost:5001").replace('/auth','');
       const res = await axios.put(
-        `${BASE_API_URL}/todos/${id}`,
+        `${TODOS_API_URL}/todos/${id}`,
         { completed: !completed },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -70,8 +70,8 @@ const TodoList = () => {
 
   const deleteTodo = async (id) => {
     try {
-      const BASE_API_URL = process.env.REACT_APP_API_URL.replace('/auth','') || "http://localhost:5001";
-      await axios.delete(`${BASE_API_URL}/todos/${id}`, {
+      const TODOS_API_URL = (process.env.REACT_APP_API_URL || "http://localhost:5001").replace('/auth','');
+      await axios.delete(`${TODOS_API_URL}/todos/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTodos(todos.filter((todo) => todo._id !== id));
@@ -86,12 +86,12 @@ const TodoList = () => {
     setEditingText(text);
   };
 
-  // ✅ Single saveEdit function
+  // ✅ Single saveEdit function for Todos
   const saveEdit = async (id) => {
     try {
-      const BASE_API_URL = process.env.REACT_APP_API_URL.replace('/auth','') || "http://localhost:5001";
+      const TODOS_API_URL = (process.env.REACT_APP_API_URL || "http://localhost:5001").replace('/auth','');
       const res = await axios.put(
-        `${BASE_API_URL}/todos/${id}`,
+        `${TODOS_API_URL}/todos/${id}`,
         { task: editingText },
         { headers: { Authorization: `Bearer ${token}` } }
       );
