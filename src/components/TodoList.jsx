@@ -1,236 +1,90 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+pipeline {
+    agent any
 
-const TodoList = () => {
-  const [todos, setTodos] = useState([]);
-  const [newTask, setNewTask] = useState('');
-  const [editingId, setEditingId] = useState(null);
-  const [editingText, setEditingText] = useState('');
+    stages {
 
-  const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+        stage('Checkout') {
+            steps {
+                git branch: 'dev', url: 'https://github.com/sahilsolanki11/todo-frontend.git'
+            }
+        }
 
-  // ✅ Redirect if no token (protect route)
-  useEffect(() => {
-    if (!token) {
-      navigate('/login');
-      return;
+        stage('Build UAT Docker Image') {
+            steps {
+                script {
+                    echo "⚙️ Generating UAT environment .env file"
+                    sh '''
+                    rm -f .env
+                    echo "REACT_APP_ENV=uat" > .env
+                    echo "REACT_APP_API_URL=http://localhost:5001/api/auth" >> .env
+                    
+                    echo "⚙️ Building Docker image for UAT"
+                    docker build -t todo-frontend:uat .
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to UAT') {
+            steps {
+                script {
+                    echo "🚀 Deploying Frontend to UAT (Port 8081)"
+                    sh '''
+                    docker stop todo-frontend-uat || true
+                    docker rm todo-frontend-uat || true
+                    
+                    docker run -d \
+                      -p 8081:80 \
+                      --name todo-frontend-uat \
+                      --network todo-net \
+                      todo-frontend:uat
+                    '''
+                }
+            }
+        }
+
+        stage('Approval for Production') {
+            steps {
+                input "✔ UAT looks good? Deploy frontend to Production?"
+            }
+        }
+
+        stage('Build Production Docker Image') {
+            steps {
+                script {
+                    echo "⚙️ Building Production Docker Image"
+                    sh '''
+                    rm -f .env
+                    echo "REACT_APP_ENV=production" > .env
+                    echo "REACT_APP_API_URL=http://localhost:5000/api/auth" >> .env
+
+                    docker build -t todo-frontend:prod .
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Production') {
+            steps {
+                script {
+                    echo "🚀 Deploying Frontend to Production (Port 3000)"
+                    sh '''
+                    docker stop todo-frontend-prod || true
+                    docker rm todo-frontend-prod || true
+                    
+                    docker run -d \
+                      -p 3000:80 \
+                      --name todo-frontend-prod \
+                      --network todo-net \
+                      todo-frontend:prod
+                    '''
+                }
+            }
+        }
     }
 
-    const fetchTodos = async () => {
-      try {
-        // Todos API: remove '/auth' only for Todo endpoints
-        const TODOS_API_URL = (process.env.REACT_APP_API_URL || "http://localhost:5001").replace('/auth','');
-        const res = await axios.get(`${TODOS_API_URL}/todos`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setTodos(res.data);
-      } catch (err) {
-        console.error(err);
-        alert('Failed to fetch todos');
-      }
-    };
-
-    fetchTodos();
-  }, [token, navigate]);
-
-  const addTodo = async (e) => {
-    e.preventDefault();
-    if (!newTask) return;
-    try {
-      const TODOS_API_URL = (process.env.REACT_APP_API_URL || "http://localhost:5001").replace('/auth','');
-      const res = await axios.post(
-        `${TODOS_API_URL}/todos`,
-        { task: newTask },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setTodos([...todos, res.data]);
-      setNewTask('');
-    } catch (err) {
-      console.error(err);
-      alert('Failed to add todo');
+    post {
+        success { echo "✔ Frontend CI/CD completed successfully!" }
+        failure { echo "❌ FRONTEND deployment failed!" }
     }
-  };
-
-  const toggleCompleted = async (id, completed) => {
-    try {
-      const TODOS_API_URL = (process.env.REACT_APP_API_URL || "http://localhost:5001").replace('/auth','');
-      const res = await axios.put(
-        `${TODOS_API_URL}/todos/${id}`,
-        { completed: !completed },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setTodos(todos.map((todo) => (todo._id === id ? res.data : todo)));
-    } catch (err) {
-      console.error(err);
-      alert('Failed to update todo');
-    }
-  };
-
-  const deleteTodo = async (id) => {
-    try {
-      const TODOS_API_URL = (process.env.REACT_APP_API_URL || "http://localhost:5001").replace('/auth','');
-      await axios.delete(`${TODOS_API_URL}/todos/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setTodos(todos.filter((todo) => todo._id !== id));
-    } catch (err) {
-      console.error(err);
-      alert('Failed to delete todo');
-    }
-  };
-
-  const startEditing = (id, text) => {
-    setEditingId(id);
-    setEditingText(text);
-  };
-
-  // ✅ Single saveEdit function for Todos
-  const saveEdit = async (id) => {
-    try {
-      const TODOS_API_URL = (process.env.REACT_APP_API_URL || "http://localhost:5001").replace('/auth','');
-      const res = await axios.put(
-        `${TODOS_API_URL}/todos/${id}`,
-        { task: editingText },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setTodos(todos.map((todo) => (todo._id === id ? res.data : todo)));
-      setEditingId(null);
-      setEditingText('');
-    } catch (err) {
-      console.error(err);
-      alert('Failed to edit todo');
-    }
-  };
-
-  return (
-    <div style={{ maxWidth: '500px', margin: '50px auto', fontFamily: 'Arial, sans-serif' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '20px' }}>
-        <h2 style={{ color: '#007bff' }}>My Todo List</h2>
-      </div>
-
-      {/* Add Task Form */}
-      <form onSubmit={addTodo} style={{ display: 'flex', marginBottom: '20px', gap: '10px' }}>
-        <input
-          type="text"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          placeholder="Add new task..."
-          style={{
-            flex: 1,
-            padding: '10px',
-            borderRadius: '5px',
-            border: '1px solid #ccc',
-            fontSize: '16px',
-          }}
-        />
-        <button
-          type="submit"
-          style={{
-            padding: '10px 20px',
-            border: 'none',
-            backgroundColor: '#28a745',
-            color: '#fff',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            fontSize: '16px',
-          }}
-        >
-          Add
-        </button>
-      </form>
-
-      {/* Todo List */}
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {todos.map((todo) => (
-          <li
-            key={todo._id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px',
-              borderBottom: '1px solid #eee',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <input
-                type="checkbox"
-                checked={todo.completed}
-                onChange={() => toggleCompleted(todo._id, todo.completed)}
-              />
-
-              {editingId === todo._id ? (
-                <input
-                  type="text"
-                  value={editingText}
-                  onChange={(e) => setEditingText(e.target.value)}
-                  style={{ padding: '5px', fontSize: '16px' }}
-                />
-              ) : (
-                <span
-                  style={{
-                    textDecoration: todo.completed ? 'line-through' : 'none',
-                    fontSize: '16px',
-                  }}
-                >
-                  {todo.task}
-                </span>
-              )}
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px' }}>
-              {editingId === todo._id ? (
-                <button
-                  onClick={() => saveEdit(todo._id)}
-                  style={{
-                    border: 'none',
-                    backgroundColor: '#007bff',
-                    color: '#fff',
-                    padding: '5px 10px',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Save
-                </button>
-              ) : (
-                <button
-                  onClick={() => startEditing(todo._id, todo.task)}
-                  style={{
-                    border: 'none',
-                    backgroundColor: '#ffc107',
-                    color: '#fff',
-                    padding: '5px 10px',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Edit
-                </button>
-              )}
-
-              <button
-                onClick={() => deleteTodo(todo._id)}
-                style={{
-                  border: 'none',
-                  backgroundColor: '#dc3545',
-                  color: '#fff',
-                  padding: '5px 10px',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
-export default TodoList;
+}
