@@ -12,7 +12,8 @@ const Signup = () => {
     e.preventDefault();
     try {
       const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
-      await axios.post(`${API_URL}/api/auth/signup`, { username, email, password });
+      await axios.post(`${API_URL}/signup`, { username, email, password });
+
 
       alert('Signup successful! Please login.');
       navigate('/login');
