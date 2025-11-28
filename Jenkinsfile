@@ -12,12 +12,13 @@ pipeline {
         stage('Build UAT Docker Image') {
             steps {
                 script {
-                    echo "⚙️ Building Frontend UAT Docker Image"
+                    echo "⚙️ Generating UAT environment .env file"
                     sh '''
                     rm -f .env
                     echo "REACT_APP_ENV=uat" > .env
-                    echo "REACT_APP_API_URL=http://todo-backend-uat:5000/api" >> .env
-
+                    echo "REACT_APP_API_URL=http://localhost:5001/api/auth" >> .env
+                    
+                    echo "⚙️ Building Docker image for UAT"
                     docker build -t todo-frontend:uat .
                     '''
                 }
@@ -31,7 +32,7 @@ pipeline {
                     sh '''
                     docker stop todo-frontend-uat || true
                     docker rm todo-frontend-uat || true
-
+                    
                     docker run -d \
                       -p 8081:80 \
                       --name todo-frontend-uat \
@@ -51,11 +52,11 @@ pipeline {
         stage('Build Production Docker Image') {
             steps {
                 script {
-                    echo "⚙️ Building Frontend Production Docker Image"
+                    echo "⚙️ Building Production Docker Image"
                     sh '''
                     rm -f .env
                     echo "REACT_APP_ENV=production" > .env
-                    echo "REACT_APP_API_URL=http://todo-backend-prod:5000/api" >> .env
+                    echo "REACT_APP_API_URL=http://localhost:5000/api/auth" >> .env
 
                     docker build -t todo-frontend:prod .
                     '''
@@ -70,7 +71,7 @@ pipeline {
                     sh '''
                     docker stop todo-frontend-prod || true
                     docker rm todo-frontend-prod || true
-
+                    
                     docker run -d \
                       -p 3000:80 \
                       --name todo-frontend-prod \
@@ -83,11 +84,7 @@ pipeline {
     }
 
     post {
-        success {
-            echo "✔ Frontend CI/CD completed successfully!"
-        }
-        failure {
-            echo "❌ Frontend deployment failed!"
-        }
+        success { echo "✔ Frontend CI/CD completed successfully!" }
+        failure { echo "❌ FRONTEND deployment failed!" }
     }
 }
