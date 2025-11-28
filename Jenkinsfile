@@ -1,8 +1,13 @@
 pipeline {
     agent any
 
-    stages {
+    environment {
+        // Define API URLs for different environments
+        UAT_API_URL = "http://localhost:5001"
+        PROD_API_URL = "http://localhost:5000"
+    }
 
+    stages {
         stage('Checkout') {
             steps {
                 git branch: 'dev', url: 'https://github.com/sahilsolanki11/todo-frontend.git'
@@ -16,7 +21,7 @@ pipeline {
                     sh '''
                     rm -f .env
                     echo "REACT_APP_ENV=uat" > .env
-                    echo "REACT_APP_API_URL=http://localhost:5001/api/auth" >> .env
+                    echo "REACT_APP_API_URL=${UAT_API_URL}" >> .env
                     
                     echo "⚙️ Building Docker image for UAT"
                     docker build -t todo-frontend:uat .
@@ -33,10 +38,10 @@ pipeline {
                     docker stop todo-frontend-uat || true
                     docker rm todo-frontend-uat || true
                     
-                    docker run -d \
-                      -p 8081:80 \
-                      --name todo-frontend-uat \
-                      --network todo-net \
+                    docker run -d \\
+                      -p 8081:80 \\
+                      --name todo-frontend-uat \\
+                      --network todo-net \\
                       todo-frontend:uat
                     '''
                 }
@@ -56,7 +61,7 @@ pipeline {
                     sh '''
                     rm -f .env
                     echo "REACT_APP_ENV=production" > .env
-                    echo "REACT_APP_API_URL=http://localhost:5000/api/auth" >> .env
+                    echo "REACT_APP_API_URL=${PROD_API_URL}" >> .env
 
                     docker build -t todo-frontend:prod .
                     '''
@@ -72,10 +77,10 @@ pipeline {
                     docker stop todo-frontend-prod || true
                     docker rm todo-frontend-prod || true
                     
-                    docker run -d \
-                      -p 3000:80 \
-                      --name todo-frontend-prod \
-                      --network todo-net \
+                    docker run -d \\
+                      -p 3000:80 \\
+                      --name todo-frontend-prod \\
+                      --network todo-net \\
                       todo-frontend:prod
                     '''
                 }
@@ -84,7 +89,11 @@ pipeline {
     }
 
     post {
-        success { echo "✔ Frontend CI/CD completed successfully!" }
-        failure { echo "❌ FRONTEND deployment failed!" }
+        success { 
+            echo "✔ Frontend CI/CD completed successfully!" 
+        }
+        failure { 
+            echo "❌ FRONTEND deployment failed!" 
+        }
     }
 }
