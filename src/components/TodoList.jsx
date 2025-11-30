@@ -10,8 +10,9 @@ const TodoList = () => {
 
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+  const API_URL = process.env.REACT_APP_API_URL;
 
-  // ✅ Redirect if no token (protect route)
+  // Redirect if no token
   useEffect(() => {
     if (!token) {
       navigate('/login');
@@ -20,9 +21,8 @@ const TodoList = () => {
 
     const fetchTodos = async () => {
       try {
-        const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
         const res = await axios.get(`${API_URL}/api/todos`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` }
         });
         setTodos(res.data);
       } catch (err) {
@@ -32,18 +32,19 @@ const TodoList = () => {
     };
 
     fetchTodos();
-  }, [token, navigate]);
+  }, [token, navigate, API_URL]);
 
   const addTodo = async (e) => {
     e.preventDefault();
     if (!newTask) return;
+
     try {
-      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
       const res = await axios.post(
         `${API_URL}/api/todos`,
         { task: newTask },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       setTodos([...todos, res.data]);
       setNewTask('');
     } catch (err) {
@@ -54,12 +55,12 @@ const TodoList = () => {
 
   const toggleCompleted = async (id, completed) => {
     try {
-      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
       const res = await axios.put(
         `${API_URL}/api/todos/${id}`,
         { completed: !completed },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       setTodos(todos.map((todo) => (todo._id === id ? res.data : todo)));
     } catch (err) {
       console.error(err);
@@ -69,9 +70,8 @@ const TodoList = () => {
 
   const deleteTodo = async (id) => {
     try {
-      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
       await axios.delete(`${API_URL}/api/todos/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
       setTodos(todos.filter((todo) => todo._id !== id));
     } catch (err) {
@@ -80,19 +80,14 @@ const TodoList = () => {
     }
   };
 
-  const startEditing = (id, text) => {
-    setEditingId(id);
-    setEditingText(text);
-  };
-
   const saveEdit = async (id) => {
     try {
-      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
       const res = await axios.put(
         `${API_URL}/api/todos/${id}`,
         { task: editingText },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       setTodos(todos.map((todo) => (todo._id === id ? res.data : todo)));
       setEditingId(null);
       setEditingText('');
@@ -103,127 +98,46 @@ const TodoList = () => {
   };
 
   return (
-    <div style={{ maxWidth: '500px', margin: '50px auto', fontFamily: 'Arial, sans-serif' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '20px' }}>
-        <h2 style={{ color: '#007bff' }}>My Todo List</h2>
-      </div>
+    <div style={{ maxWidth: '500px', margin: '50px auto' }}>
+      <h2>My Todo List</h2>
 
-      {/* Add Task Form */}
-      <form onSubmit={addTodo} style={{ display: 'flex', marginBottom: '20px', gap: '10px' }}>
+      <form onSubmit={addTodo}>
         <input
           type="text"
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
           placeholder="Add new task..."
-          style={{
-            flex: 1,
-            padding: '10px',
-            borderRadius: '5px',
-            border: '1px solid #ccc',
-            fontSize: '16px',
-          }}
         />
-        <button
-          type="submit"
-          style={{
-            padding: '10px 20px',
-            border: 'none',
-            backgroundColor: '#28a745',
-            color: '#fff',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            fontSize: '16px',
-          }}
-        >
-          Add
-        </button>
+        <button type="submit">Add</button>
       </form>
 
-      {/* Todo List */}
-      <ul style={{ listStyle: 'none', padding: 0 }}>
+      <ul>
         {todos.map((todo) => (
-          <li
-            key={todo._id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px',
-              borderBottom: '1px solid #eee',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <li key={todo._id}>
+            <input
+              type="checkbox"
+              checked={todo.completed}
+              onChange={() => toggleCompleted(todo._id, todo.completed)}
+            />
+
+            {editingId === todo._id ? (
               <input
-                type="checkbox"
-                checked={todo.completed}
-                onChange={() => toggleCompleted(todo._id, todo.completed)}
+                value={editingText}
+                onChange={(e) => setEditingText(e.target.value)}
               />
+            ) : (
+              <span>{todo.task}</span>
+            )}
 
-              {editingId === todo._id ? (
-                <input
-                  type="text"
-                  value={editingText}
-                  onChange={(e) => setEditingText(e.target.value)}
-                  style={{ padding: '5px', fontSize: '16px' }}
-                />
-              ) : (
-                <span
-                  style={{
-                    textDecoration: todo.completed ? 'line-through' : 'none',
-                    fontSize: '16px',
-                  }}
-                >
-                  {todo.task}
-                </span>
-              )}
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px' }}>
-              {editingId === todo._id ? (
-                <button
-                  onClick={() => saveEdit(todo._id)}
-                  style={{
-                    border: 'none',
-                    backgroundColor: '#007bff',
-                    color: '#fff',
-                    padding: '5px 10px',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Save
-                </button>
-              ) : (
-                <button
-                  onClick={() => startEditing(todo._id, todo.task)}
-                  style={{
-                    border: 'none',
-                    backgroundColor: '#ffc107',
-                    color: '#fff',
-                    padding: '5px 10px',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Edit
-                </button>
-              )}
-
-              <button
-                onClick={() => deleteTodo(todo._id)}
-                style={{
-                  border: 'none',
-                  backgroundColor: '#dc3545',
-                  color: '#fff',
-                  padding: '5px 10px',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                }}
-              >
-                Delete
+            {editingId === todo._id ? (
+              <button onClick={() => saveEdit(todo._id)}>Save</button>
+            ) : (
+              <button onClick={() => { setEditingId(todo._id); setEditingText(todo.task); }}>
+                Edit
               </button>
-            </div>
+            )}
+
+            <button onClick={() => deleteTodo(todo._id)}>Delete</button>
           </li>
         ))}
       </ul>
