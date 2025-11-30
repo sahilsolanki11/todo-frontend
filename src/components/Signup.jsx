@@ -11,69 +11,38 @@ const Signup = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
-      await axios.post(`${API_URL}/signup`, { username, email, password });
-
+      const API_URL = process.env.REACT_APP_API_URL;
+      await axios.post(`${API_URL}/api/auth/signup`, {
+        username,
+        email,
+        password
+      });
 
       alert('Signup successful! Please login.');
       navigate('/login');
     } catch (err) {
       console.error('Signup Error:', err);
-      alert('Signup failed. Email may already be in use or server unavailable.');
+      alert('Signup failed. Try again.');
     }
   };
 
   return (
-    <div style={{
-      maxWidth: '400px',
-      margin: '80px auto',
-      padding: '30px',
-      border: '1px solid #eee',
-      borderRadius: '10px',
-      boxShadow: '0px 4px 10px rgba(0,0,0,0.1)',
-      fontFamily: 'Arial, sans-serif'
-    }}>
-      <h2 style={{ textAlign: 'center', color: '#007bff', marginBottom: '20px' }}>Sign Up</h2>
-      <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
-        />
-        <button type="submit" style={{
-          padding: '10px',
-          backgroundColor: '#28a745',
-          color: '#fff',
-          fontSize: '16px',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer'
-        }}>
-          Sign Up
-        </button>
+    <div style={{ maxWidth: '400px', margin: '80px auto', padding: '30px' }}>
+      <h2>Sign Up</h2>
+      <form onSubmit={handleSignup}>
+        <input type="text" placeholder="Username" value={username}
+          onChange={(e) => setUsername(e.target.value)} required />
+
+        <input type="email" placeholder="Email" value={email}
+          onChange={(e) => setEmail(e.target.value)} required />
+
+        <input type="password" placeholder="Password" value={password}
+          onChange={(e) => setPassword(e.target.value)} required />
+
+        <button type="submit">Sign Up</button>
       </form>
-      <p style={{ textAlign: 'center', marginTop: '15px' }}>
-        Already have an account? <Link to="/login" style={{ color: '#007bff' }}>Login</Link>
-      </p>
+
+      <p>Already have an account? <Link to="/login">Login</Link></p>
     </div>
   );
 };
