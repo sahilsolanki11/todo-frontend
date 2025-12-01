@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_NETWORK = "todo-net"
+        BACKEND_UAT_URL = "http://<your-server-ip>:5001"   // replace <your-server-ip> with your server IP for browser access
+        BACKEND_PROD_URL = "http://<your-server-ip>:5000"
+    }
+
     stages {
 
         stage('Checkout') {
@@ -11,30 +17,26 @@ pipeline {
 
         stage('Build UAT Docker Image') {
             steps {
-                script {
-                    sh '''
-                    rm -f .env
-                    echo "REACT_APP_API_URL=http://todo-backend-uat:5000" > .env
-                    docker build -t todo-frontend:uat .
-                    '''
-                }
+                sh '''
+                rm -f .env
+                echo "REACT_APP_API_URL=$BACKEND_UAT_URL" > .env
+                docker build -t todo-frontend:uat .
+                '''
             }
         }
 
-        stage('Deploy to UAT') {
+        stage('Deploy UAT') {
             steps {
-                script {
-                    sh '''
-                    docker stop todo-frontend-uat || true
-                    docker rm todo-frontend-uat || true
-
-                    docker run -d \
-                      -p 8081:80 \
-                      --name todo-frontend-uat \
-                      --network todo-net \
-                      todo-frontend:uat
-                    '''
-                }
+                sh '''
+                docker network inspect $DOCKER_NETWORK || docker network create $DOCKER_NETWORK
+                docker stop todo-frontend-uat || true
+                docker rm todo-frontend-uat || true
+                docker run -d \
+                  -p 8081:80 \
+                  --name todo-frontend-uat \
+                  --network $DOCKER_NETWORK \
+                  todo-frontend:uat
+                '''
             }
         }
 
@@ -46,36 +48,31 @@ pipeline {
 
         stage('Build Production Docker Image') {
             steps {
-                script {
-                    sh '''
-                    rm -f .env
-                    echo "REACT_APP_API_URL=http://todo-backend-prod:5000" > .env
-                    docker build -t todo-frontend:prod .
-                    '''
-                }
+                sh '''
+                rm -f .env
+                echo "REACT_APP_API_URL=$BACKEND_PROD_URL" > .env
+                docker build -t todo-frontend:prod .
+                '''
             }
         }
 
-        stage('Deploy to Production') {
+        stage('Deploy Production') {
             steps {
-                script {
-                    sh '''
-                    docker stop todo-frontend-prod || true
-                    docker rm todo-frontend-prod || true
-
-                    docker run -d \
-                      -p 3000:80 \
-                      --name todo-frontend-prod \
-                      --network todo-net \
-                      todo-frontend:prod
-                    '''
-                }
+                sh '''
+                docker stop todo-frontend-prod || true
+                docker rm todo-frontend-prod || true
+                docker run -d \
+                  -p 3000:80 \
+                  --name todo-frontend-prod \
+                  --network $DOCKER_NETWORK \
+                  todo-frontend:prod
+                '''
             }
         }
     }
 
     post {
         success { echo "✔ Frontend CI/CD completed successfully!" }
-        failure { echo "❌ FRONTEND deployment failed!" }
+        failure { echo "❌ Frontend deployment failed!" }
     }
 }
