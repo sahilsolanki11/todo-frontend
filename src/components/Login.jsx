@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -7,22 +7,31 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
+  // ✅ Redirect if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate('/todos', { replace: true }); // replace prevents back navigation
+    }
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
-
-      const res = await axios.post(`${API_URL}/login`, { 
+      // ✅ Correct backend route for your project
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, { 
         email, 
         password 
       });
 
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('username', res.data.user.username);
+
+      // ✅ Redirect to todos page after success
       navigate('/todos');
     } catch (err) {
       console.error('Login Error:', err);
-      alert('Login failed. Check your credentials or backend connection.');
+      alert('Invalid email or password');
     }
   };
 
@@ -31,56 +40,43 @@ const Login = () => {
       maxWidth: '400px',
       margin: '80px auto',
       padding: '30px',
-      border: '2px solid #007bff',
+      border: '1px solid #eee',
       borderRadius: '10px',
-      backgroundColor: '#f8faff',
-      boxShadow: '0px 4px 12px rgba(0,0,0,0.08)',
+      boxShadow: '0px 4px 10px rgba(0,0,0,0.1)',
       fontFamily: 'Arial, sans-serif'
     }}>
-      <h2 style={{ textAlign: 'center', color: '#0056b3', marginBottom: '20px' }}>
-        🔐 Login Page (v2)
-      </h2>
-
+      <h2 style={{ textAlign: 'center', color: '#007bff', marginBottom: '20px' }}>Login</h2>
       <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <input
           type="email"
-          placeholder="Enter your email..."
+          placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #bbb' }}
+          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
         />
-
         <input
           type="password"
-          placeholder="Enter your password..."
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #bbb' }}
+          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
         />
-
-        <button
-          type="submit"
-          style={{
-            padding: '10px',
-            backgroundColor: '#007bff',
-            color: '#fff',
-            fontSize: '16px',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            transition: '0.2s'
-          }}
-          onMouseEnter={(e) => (e.target.style.backgroundColor = '#0056b3')}
-          onMouseLeave={(e) => (e.target.style.backgroundColor = '#007bff')}
-        >
-          Login Now
+        <button type="submit" style={{
+          padding: '10px',
+          backgroundColor: '#28a745',
+          color: '#fff',
+          fontSize: '16px',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer'
+        }}>
+          Login
         </button>
       </form>
-
       <p style={{ textAlign: 'center', marginTop: '15px' }}>
-        Don't have an account? <Link to="/signup" style={{ color: '#0056b3' }}>Sign Up</Link>
+        Don’t have an account? <Link to="/signup" style={{ color: '#007bff' }}>Sign Up</Link>
       </p>
     </div>
   );

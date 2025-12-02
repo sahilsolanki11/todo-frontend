@@ -1,13 +1,13 @@
-# Step 1: Build React app
+# Use official Node image for building
 FROM node:18 as build
 
 WORKDIR /app
 
-# Install dependencies
+# Copy package files and install dependencies
 COPY package*.json ./
 RUN npm install
 
-# Copy all frontend code
+# Copy all code and build
 COPY . .
 
 # Copy environment variables from Jenkins
@@ -16,14 +16,14 @@ COPY .env .env
 # Build React app
 RUN npm run build
 
-# Step 2: Serve with Nginx
+# Use Nginx to serve the frontend
 FROM nginx:alpine
 
 # Copy built frontend to Nginx HTML folder
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Expose Nginx port
+# Expose port 80
 EXPOSE 80
 
-# Run Nginx
+# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

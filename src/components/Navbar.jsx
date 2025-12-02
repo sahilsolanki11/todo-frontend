@@ -9,54 +9,79 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   return (
-    <nav
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "10px 20px",
-        backgroundColor: "#007bff",
-        color: "white",
-      }}
-    >
-      <h3 style={{ margin: 0 }}>Todo App</h3>
-      <div style={{ display: "flex", gap: "15px" }}>
-        {token ? (
-          <>
-            <Link to="/todos" style={{ color: "white", textDecoration: "none" }}>
+    <>
+      <nav
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "10px 20px",
+          background: "linear-gradient(90deg, #6B73FF 0%, #000DFF 100%)",
+          color: "white",
+          borderRadius: "0 0 15px 15px",
+          boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+        }}
+      >
+        <h3 style={{ margin: 0, fontWeight: "700", fontSize: "24px" }}>Todo App</h3>
+
+        {token && (
+          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+            <Link
+              to="/todos"
+              style={{
+                color: "#fff",
+                textDecoration: "none",
+                fontWeight: "500",
+                padding: "6px 12px",
+                borderRadius: "8px",
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
+                transition: "0.3s",
+              }}
+              onMouseEnter={(e) =>
+                (e.target.style.backgroundColor = "rgba(255, 255, 255, 0.35)")
+              }
+              onMouseLeave={(e) =>
+                (e.target.style.backgroundColor = "rgba(255, 255, 255, 0.2)")
+              }
+            >
               My Todos
             </Link>
-            <span>👤 {username || "User"}</span>
+
+            <span style={{ fontWeight: "500" }}>👤 {username || "User"}</span>
+
             <button
               onClick={handleLogout}
               style={{
                 border: "none",
-                backgroundColor: "#dc3545",
+                background: "linear-gradient(90deg, #FF6B6B 0%, #FFD93D 100%)",
                 color: "#fff",
-                padding: "5px 10px",
-                borderRadius: "5px",
+                padding: "6px 14px",
+                borderRadius: "8px",
+                fontWeight: "600",
                 cursor: "pointer",
+                transition: "0.3s",
               }}
+              onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
+              onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
             >
               Logout
             </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" style={{ color: "white", textDecoration: "none" }}>
-              Login
-            </Link>
-            <Link to="/signup" style={{ color: "white", textDecoration: "none" }}>
-              Signup
-            </Link>
-          </>
+          </div>
         )}
-      </div>
-    </nav>
+      </nav>
+
+      {/* Spacer to push page content below Navbar */}
+      <div style={{ height: "70px" }}></div>
+    </>
   );
 };
 

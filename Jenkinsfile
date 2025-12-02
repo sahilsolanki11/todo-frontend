@@ -1,65 +1,71 @@
 pipeline {
     agent any
 
+    environment {
+        REACT_APP_API_URL = credentials('frontend-api-url') // Your secret in Jenkins
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/sahilsolanki11/todo-frontend.git'
+                git branch: 'dev', url: 'https://github.com/sahilsolanki11/todo-frontend.git'
             }
         }
 
-        stage('Build UAT Docker Image') {
+        stage('Install Dependencies') {
             steps {
                 script {
                     echo "⚙️ Building Frontend UAT Docker Image"
-                    sh '''
-                    echo "REACT_APP_ENV=uat" > .env
-                    echo "REACT_APP_API_URL=http://172.30.31.245:5001/api" >> .env
-                    docker build -t todo-frontend:uat .
+                    // ✅ Corrected API base URL (no /auth)
+                    bat '''
+                    echo REACT_APP_ENV=uat > .env
+                    echo REACT_APP_API_URL=http://todo-backend-uat:5000/api >> .env
                     '''
+                    bat 'docker build -t todo-frontend:uat .'
                 }
             }
         }
 
-        stage('Deploy to UAT') {
+        stage('Create .env') {
             steps {
                 script {
                     echo "🚀 Deploying Frontend to UAT (Port 8081)"
-                    sh '''
-                    docker stop todo-frontend-uat || true
-                    docker rm todo-frontend-uat || true
+                    bat '''
+                    docker stop todo-frontend-uat || exit 0
+                    docker rm todo-frontend-uat || exit 0
                     docker run -d -p 8081:80 --name todo-frontend-uat --network todo-net todo-frontend:uat
                     '''
                 }
             }
         }
 
-        stage('Approval for Production') {
+        stage('Build Docker Image for UAT') {
             steps {
-                input "✅ UAT testing done? Deploy frontend to Production?"
+                sh 'docker build -t todo-frontend:uat .'
             }
         }
 
-        stage('Build Production Docker Image') {
+        stage('Deploy UAT') {
             steps {
                 script {
                     echo "⚙️ Building Frontend Production Docker Image"
-                    sh '''
-                    echo "REACT_APP_ENV=prod" > .env
-                    echo "REACT_APP_API_URL=http://172.30.31.245:5000/api" >> .env
-                    docker build -t todo-frontend:prod .
+                    // ✅ Corrected API base URL (no /auth)
+                    bat '''
+                    echo REACT_APP_ENV=prod > .env
+                    echo REACT_APP_API_URL=http://todo-backend-prod:5000/api >> .env
                     '''
+                    bat 'docker build -t todo-frontend:prod .'
                 }
             }
         }
 
-        stage('Deploy to Production') {
+        stage('Manual Approval for Production') {
             steps {
                 script {
-                    echo "🚀 Deploying Frontend Production (Port 3000)"
-                    sh '''
-                    docker stop todo-frontend-prod || true
-                    docker rm todo-frontend-prod || true
+                    echo "🚀 Deploying Frontend to Production (Port 3000)"
+                    bat '''
+                    docker stop todo-frontend-prod || exit 0
+                    docker rm todo-frontend-prod || exit 0
                     docker run -d -p 3000:80 --name todo-frontend-prod --network todo-net todo-frontend:prod
                     '''
                 }
@@ -69,11 +75,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Frontend pipeline completed successfully!"
+            echo "✅ Frontend pipeline finished successfully!"
         }
         failure {
             echo "❌ Frontend deployment failed!"
         }
     }
 }
-
