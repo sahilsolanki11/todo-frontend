@@ -1,77 +1,118 @@
-.pageContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
-  font-family: 'Inter', sans-serif;
-  padding: 0 16px;
-}
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
 
-.card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 32px 24px;
-  width: 100%;
-  max-width: 360px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-}
+const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-.title {
-  margin: 0 0 24px 0;
-  font-size: 28px;
-  font-weight: 600;
-  color: #333;
-  text-align: center;
-}
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const API_URL = process.env.REACT_APP_API_URL;
+      const res = await axios.post(`${API_URL}/api/auth/login`, {
+        email,
+        password,
+      });
 
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+      localStorage.setItem('token', res.data.token);
+      navigate('/todos');
+    } catch (err) {
+      console.error('Login Error:', err);
+      alert('Invalid email or password');
+    }
+  };
 
-.input {
-  padding: 12px 16px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s ease;
-}
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #6B73FF 0%, #000DFF 100%)',
+      fontFamily: 'Arial, sans-serif',
+      padding: '0 16px',
+    }}>
+      <div style={{
+        background: '#fff',
+        padding: '40px',
+        borderRadius: '16px',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+        width: '100%',
+        maxWidth: '400px',
+      }}>
+        <h2 style={{
+          textAlign: 'center',
+          marginBottom: '30px',
+          color: '#333',
+          fontSize: '28px',
+          fontWeight: '600',
+        }}>Login</h2>
 
-.input:focus {
-  border-color: #6B73FF;
-  outline: none;
-}
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{
+              padding: '12px 16px',
+              borderRadius: '8px',
+              border: '1px solid #ccc',
+              fontSize: '16px',
+              outline: 'none',
+              transition: '0.3s',
+            }}
+            onFocus={(e) => e.target.style.borderColor = '#6B73FF'}
+            onBlur={(e) => e.target.style.borderColor = '#ccc'}
+          />
 
-.button {
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #6B73FF;
-  color: white;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{
+              padding: '12px 16px',
+              borderRadius: '8px',
+              border: '1px solid #ccc',
+              fontSize: '16px',
+              outline: 'none',
+              transition: '0.3s',
+            }}
+            onFocus={(e) => e.target.style.borderColor = '#6B73FF'}
+            onBlur={(e) => e.target.style.borderColor = '#ccc'}
+          />
 
-.button:hover {
-  background: #000DFF;
-}
+          <button
+            type="submit"
+            style={{
+              padding: '12px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              background: '#6B73FF',
+              color: '#fff',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: '0.3s',
+            }}
+            onMouseEnter={(e) => e.target.style.background = '#000DFF'}
+            onMouseLeave={(e) => e.target.style.background = '#6B73FF'}
+          >
+            Login
+          </button>
+        </form>
 
-.signupText {
-  margin-top: 20px;
-  text-align: center;
-  color: #555;
-  font-size: 14px;
-}
+        <p style={{ textAlign: 'center', marginTop: '20px', color: '#555', fontSize: '14px' }}>
+          Don't have an account? <Link to="/signup" style={{ color: '#6B73FF', fontWeight: 'bold', textDecoration: 'none' }}>Signup</Link>
+        </p>
+      </div>
+    </div>
+  );
+};
 
-.signupLink {
-  color: #6B73FF;
-  font-weight: 500;
-  text-decoration: none;
-}
-.signupLink:hover {
-  text-decoration: underline;
-}
+export default Login;
