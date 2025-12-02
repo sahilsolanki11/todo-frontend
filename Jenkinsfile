@@ -54,15 +54,15 @@ pipeline {
             }
         }
 
-        stage('Deploy Production') {
-            steps {
-                sh '''
-                    docker stop todo-frontend-prod || true
-                    docker rm todo-frontend-prod || true
-                    docker run -d --name todo-frontend-prod --network todo-net -p 3000:3000 todo-frontend:prod
-                '''
-            }
-        }
+    stage('Deploy Production') {
+    steps {
+        sh '''
+            docker stop todo-frontend-prod || true
+            docker rm todo-frontend-prod || true
+            docker run -d --name todo-frontend-prod --network todo-net -p 3000:80 todo-frontend:prod
+        '''
+    }
+}
     }
 }
 
