@@ -1,45 +1,77 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+.pageContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+  font-family: 'Inter', sans-serif;
+  padding: 0 16px;
+}
 
-const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 24px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const API_URL = process.env.REACT_APP_API_URL;
-      const res = await axios.post(`${API_URL}/api/auth/login`, {
-        email,
-        password,
-      });
+.title {
+  margin: 0 0 24px 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
 
-      localStorage.setItem('token', res.data.token);
-      navigate('/todos');
-    } catch (err) {
-      console.error('Login Error:', err);
-      alert('Invalid email or password');
-    }
-  };
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-  return (
-    <div style={{ maxWidth: '400px', margin: '80px auto' }}>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <input type="email" placeholder="Email" value={email}
-          onChange={(e) => setEmail(e.target.value)} required />
+.input {
+  padding: 12px 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
 
-        <input type="password" placeholder="Password" value={password}
-          onChange={(e) => setPassword(e.target.value)} required />
+.input:focus {
+  border-color: #6B73FF;
+  outline: none;
+}
 
-        <button type="submit">Login</button>
-      </form>
+.button {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #6B73FF;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
-      <p>Don't have an account? <Link to="/signup">Signup</Link></p>
-    </div>
-  );
-};
+.button:hover {
+  background: #000DFF;
+}
 
-export default Login;
+.signupText {
+  margin-top: 20px;
+  text-align: center;
+  color: #555;
+  font-size: 14px;
+}
+
+.signupLink {
+  color: #6B73FF;
+  font-weight: 500;
+  text-decoration: none;
+}
+.signupLink:hover {
+  text-decoration: underline;
+}
