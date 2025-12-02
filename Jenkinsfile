@@ -37,7 +37,7 @@ pipeline {
                 sh '''
                     docker stop todo-frontend-uat || true
                     docker rm todo-frontend-uat || true
-                    docker run -d --name todo-frontend-uat --network todo-net -p 8081:3000 todo-frontend:uat
+                    docker run -d --name todo-frontend-uat --network todo-net -p 8081:80 todo-frontend:uat
                 '''
             }
         }
