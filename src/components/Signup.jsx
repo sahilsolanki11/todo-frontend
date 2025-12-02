@@ -19,8 +19,9 @@ const Signup = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const API_URL = process.env.REACT_APP_API_URL;
-      await axios.post(`${API_URL}/api/auth/signup`, { username, email, password });
+      // ✅ Correct API path
+      await axios.post(`${process.env.REACT_APP_API_URL}/signup`, { username, email, password });
+
 
       alert('Signup successful! Please login.');
       navigate('/login', { replace: true });
