@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -7,13 +7,22 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
+  // ✅ Redirect if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate('/todos', { replace: true }); // replace prevents back navigation
+    }
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const API_URL = process.env.REACT_APP_API_URL;
       const res = await axios.post(`${API_URL}/api/auth/login`, { email, password });
+
       localStorage.setItem('token', res.data.token);
-      navigate('/todos');
+      navigate('/todos', { replace: true }); // replace prevents back navigation
     } catch (err) {
       console.error('Login Error:', err);
       alert('Invalid email or password');
