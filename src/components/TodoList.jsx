@@ -21,8 +21,8 @@ const TodoList = () => {
 
     const fetchTodos = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/todos', {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await axios.get(`${API_URL}/api/todos`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
         setTodos(res.data);
       } catch (err) {
@@ -39,7 +39,6 @@ const TodoList = () => {
     if (!newTask.trim()) return;
 
     try {
-      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
       const res = await axios.post(
         `${API_URL}/api/todos`,
         { task: newTask },
@@ -55,7 +54,6 @@ const TodoList = () => {
 
   const toggleCompleted = async (id, completed) => {
     try {
-      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
       const res = await axios.put(
         `${API_URL}/api/todos/${id}`,
         { completed: !completed },
@@ -70,8 +68,8 @@ const TodoList = () => {
 
   const deleteTodo = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/todos/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      await axios.delete(`${API_URL}/api/todos/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       setTodos(todos.filter(todo => todo._id !== id));
     } catch (err) {
@@ -84,7 +82,6 @@ const TodoList = () => {
     if (!editingText.trim()) return;
 
     try {
-      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
       const res = await axios.put(
         `${API_URL}/api/todos/${id}`,
         { task: editingText },
