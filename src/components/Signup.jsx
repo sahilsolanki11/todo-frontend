@@ -8,7 +8,7 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  // ✅ Redirect if already logged in
+  // Redirect if already logged in
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -21,7 +21,6 @@ const Signup = () => {
     try {
       const API_URL = process.env.REACT_APP_API_URL;
       await axios.post(`${API_URL}/api/auth/signup`, { username, email, password });
-
       alert('Signup successful! Please login.');
       navigate('/login', { replace: true });
     } catch (err) {
@@ -36,25 +35,26 @@ const Signup = () => {
       justifyContent: 'center',
       alignItems: 'center',
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)',
-      fontFamily: 'Arial, sans-serif',
+      background: 'linear-gradient(135deg, #3ac5ca 0%, #90e0ef 100%)',
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
       padding: '0 16px',
     }}>
       <div style={{
-        background: 'linear-gradient(145deg, #6A11CB 0%, #2575FC 100%)',
-        padding: '40px',
-        borderRadius: '20px',
-        boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
+        background: 'linear-gradient(145deg, #00796B 0%, #00ACC1 100%)',
+        padding: '50px 40px',
+        borderRadius: '25px',
+        boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
         width: '100%',
-        maxWidth: '400px',
+        maxWidth: '420px',
         color: '#fff',
+        transition: 'all 0.3s ease',
       }}>
         <h2 style={{
           textAlign: 'center',
-          marginBottom: '30px',
-          fontSize: '30px',
+          marginBottom: '35px',
+          fontSize: '32px',
           fontWeight: '700',
-          textShadow: '1px 1px 3px rgba(0,0,0,0.3)',
+          textShadow: '2px 2px 5px rgba(0,0,0,0.4)',
         }}>Sign Up</h2>
 
         <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -65,15 +65,18 @@ const Signup = () => {
             onChange={(e) => setUsername(e.target.value)}
             required
             style={{
-              padding: '14px 18px',
-              borderRadius: '12px',
+              padding: '16px 20px',
+              borderRadius: '15px',
               border: 'none',
               fontSize: '16px',
               outline: 'none',
-              background: 'rgba(255,255,255,0.2)',
+              background: 'rgba(255,255,255,0.15)',
               color: '#fff',
-              backdropFilter: 'blur(5px)',
+              backdropFilter: 'blur(8px)',
+              transition: 'all 0.3s ease',
             }}
+            onFocus={(e) => e.target.style.background = 'rgba(255,255,255,0.25)'}
+            onBlur={(e) => e.target.style.background = 'rgba(255,255,255,0.15)'}
           />
 
           <input
@@ -83,15 +86,18 @@ const Signup = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
             style={{
-              padding: '14px 18px',
-              borderRadius: '12px',
+              padding: '16px 20px',
+              borderRadius: '15px',
               border: 'none',
               fontSize: '16px',
               outline: 'none',
-              background: 'rgba(255,255,255,0.2)',
+              background: 'rgba(255,255,255,0.15)',
               color: '#fff',
-              backdropFilter: 'blur(5px)',
+              backdropFilter: 'blur(8px)',
+              transition: 'all 0.3s ease',
             }}
+            onFocus={(e) => e.target.style.background = 'rgba(255,255,255,0.25)'}
+            onBlur={(e) => e.target.style.background = 'rgba(255,255,255,0.15)'}
           />
 
           <input
@@ -101,29 +107,32 @@ const Signup = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
             style={{
-              padding: '14px 18px',
-              borderRadius: '12px',
+              padding: '16px 20px',
+              borderRadius: '15px',
               border: 'none',
               fontSize: '16px',
               outline: 'none',
-              background: 'rgba(255,255,255,0.2)',
+              background: 'rgba(255,255,255,0.15)',
               color: '#fff',
-              backdropFilter: 'blur(5px)',
+              backdropFilter: 'blur(8px)',
+              transition: 'all 0.3s ease',
             }}
+            onFocus={(e) => e.target.style.background = 'rgba(255,255,255,0.25)'}
+            onBlur={(e) => e.target.style.background = 'rgba(255,255,255,0.15)'}
           />
 
           <button
             type="submit"
             style={{
-              padding: '14px 18px',
-              borderRadius: '12px',
+              padding: '16px 20px',
+              borderRadius: '15px',
               border: 'none',
-              background: 'linear-gradient(90deg, #FFD93D 0%, #FF6B6B 100%)',
+              background: 'linear-gradient(90deg, #26C6DA 0%, #00ACC1 100%)',
               color: '#fff',
-              fontSize: '16px',
-              fontWeight: 'bold',
+              fontSize: '18px',
+              fontWeight: '700',
               cursor: 'pointer',
-              boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.25)',
               transition: 'all 0.3s ease',
             }}
             onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
@@ -133,8 +142,8 @@ const Signup = () => {
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px', color: '#fff' }}>
-          Already have an account? <Link to="/login" style={{ color: '#FFD93D', fontWeight: 'bold', textDecoration: 'none' }}>Login</Link>
+        <p style={{ textAlign: 'center', marginTop: '25px', fontSize: '15px', color: '#e0f7fa' }}>
+          Already have an account? <Link to="/login" style={{ color: '#00E5FF', fontWeight: '700', textDecoration: 'none' }}>Login</Link>
         </p>
       </div>
     </div>
