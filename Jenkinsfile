@@ -1,13 +1,13 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_NETWORK = "todo-net"
+    }
+
     stages {
 
-        stage('Clean Workspace') {
-            steps { cleanWs() }
-        }
-
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
                 git branch: 'dev', url: 'https://github.com/sahilsolanki11/todo-frontend.git'
             }
@@ -16,7 +16,7 @@ pipeline {
         stage('Prepare Docker Network') {
             steps {
                 sh '''
-                docker network inspect todo-net >/dev/null 2>&1 || docker network create todo-net
+                    docker network inspect $DOCKER_NETWORK >/dev/null 2>&1 || docker network create $DOCKER_NETWORK
                 '''
             }
         }
@@ -24,55 +24,59 @@ pipeline {
         stage('Build Frontend UAT Image') {
             steps {
                 script {
+                    echo "⚙️ Building Frontend UAT Docker Image"
+
+                    // Create .env for UAT
+                    sh '''
+                        echo REACT_APP_API_URL=http://todo-backend-uat:5000 > .env
+                        echo REACT_APP_ENV=uat >> .env
+                    '''
+
+                    // Build Docker image tagged with commit SHA
                     def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-
-                    sh """
-                    echo BACKEND_URL=http://todo-backend-uat:5000 > .env
-                    """
-
-                    sh "docker build --no-cache -t todo-frontend:uat-${commit} ."
+                    sh "docker build -t todo-frontend:uat-${commit} ."
                 }
             }
         }
 
-        stage('Deploy Frontend UAT') {
+        stage('Deploy UAT') {
             steps {
                 script {
                     def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 
                     sh """
-                    docker stop todo-frontend-uat || true
-                    docker rm todo-frontend-uat || true
-
-                    docker run -d -p 8081:80 \
-                        --name todo-frontend-uat \
-                        --network todo-net \
-                        -e BACKEND_URL=http://todo-backend-uat:5000 \
-                        todo-frontend:uat-${commit}
+                        docker stop todo-frontend-uat || true
+                        docker rm todo-frontend-uat || true
+                        docker run -d -p 8081:80 --name todo-frontend-uat --network $DOCKER_NETWORK todo-frontend:uat-${commit}
                     """
                 }
             }
         }
 
-        stage('Approval for Production') {
+        stage('Manual Approval for Production') {
             steps {
-                input message: "Deploy frontend to PRODUCTION?"
+                input message: "✅ Approve Frontend Deployment to Production?"
             }
         }
 
         stage('Build Frontend Production Image') {
             steps {
                 script {
+                    echo "⚙️ Building Frontend Production Docker Image"
+
+                    // Create .env for Production (must use REACT_APP_API_URL)
+                    sh '''
+                        echo REACT_APP_API_URL=http://todo-backend-prod:5000 > .env
+                        echo REACT_APP_ENV=prod >> .env
+                    '''
+
                     def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 
-                    sh """
-                    echo BACKEND_URL=http://todo-backend-prod:5000 > .env
-                    """
+                    // Backup current production image for rollback
+                    sh "docker tag todo-frontend-prod todo-frontend:prod_previous || true"
 
-                    sh """
-                    docker tag todo-frontend:prod todo-frontend:previous || true
-                    docker build --no-cache -t todo-frontend:prod-${commit} .
-                    """
+                    // Build new production image
+                    sh "docker build -t todo-frontend:prod-${commit} ."
                 }
             }
         }
@@ -83,14 +87,9 @@ pipeline {
                     def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 
                     sh """
-                    docker stop todo-frontend-prod || true
-                    docker rm todo-frontend-prod || true
-
-                    docker run -d -p 3000:80 \
-                        --name todo-frontend-prod \
-                        --network todo-net \
-                        -e BACKEND_URL=http://todo-backend-prod:5000 \
-                        todo-frontend:prod-${commit}
+                        docker stop todo-frontend-prod || true
+                        docker rm todo-frontend-prod || true
+                        docker run -d -p 3000:80 --name todo-frontend-prod --network $DOCKER_NETWORK todo-frontend:prod-${commit}
                     """
                 }
             }
@@ -98,12 +97,15 @@ pipeline {
     }
 
     post {
+        success {
+            echo "✅ Frontend pipeline finished successfully!"
+        }
         failure {
-            echo "❌ Frontend failed — rolling back!"
+            echo "❌ Frontend deployment failed! Rolling back..."
             sh """
-            docker stop todo-frontend-prod || true
-            docker rm todo-frontend-prod || true
-            docker run -d -p 3000:80 --name todo-frontend-prod --network todo-net todo-frontend:previous || true
+                docker stop todo-frontend-prod || true
+                docker rm todo-frontend-prod || true
+                docker run -d -p 3000:80 --name todo-frontend-prod --network $DOCKER_NETWORK todo-frontend:prod_previous || true
             """
         }
     }
