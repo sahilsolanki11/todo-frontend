@@ -26,13 +26,19 @@ pipeline {
                 script {
                     echo "⚙️ Building Frontend UAT Docker Image"
 
-                    // Create .env for UAT
+                    // React environment for UAT build
                     sh '''
                         echo REACT_APP_API_URL=http://todo-backend-uat:5000 > .env
                         echo REACT_APP_ENV=uat >> .env
                     '''
 
-                    // Build Docker image tagged with commit SHA
+                    // NGINX dynamic backend variables for UAT
+                    sh '''
+                        export BACKEND_HOST=todo-backend-uat
+                        export BACKEND_PORT=5000
+                    '''
+
+                    // Build Docker image with commit tag
                     def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                     sh "docker build -t todo-frontend:uat-${commit} ."
                 }
@@ -64,18 +70,24 @@ pipeline {
                 script {
                     echo "⚙️ Building Frontend Production Docker Image"
 
-                    // Create .env for Production (must use REACT_APP_API_URL)
+                    // React environment for PROD build
                     sh '''
                         echo REACT_APP_API_URL=http://todo-backend-prod:5000 > .env
                         echo REACT_APP_ENV=prod >> .env
                     '''
 
+                    // NGINX dynamic backend variables for Production
+                    sh '''
+                        export BACKEND_HOST=todo-backend-prod
+                        export BACKEND_PORT=5000
+                    '''
+
                     def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 
-                    // Backup current production image for rollback
+                    // Backup for rollback
                     sh "docker tag todo-frontend-prod todo-frontend:prod_previous || true"
 
-                    // Build new production image
+                    // Build image
                     sh "docker build -t todo-frontend:prod-${commit} ."
                 }
             }
