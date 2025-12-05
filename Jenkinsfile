@@ -45,19 +45,25 @@ pipeline {
             }
         }
 
-        stage('Deploy UAT') {
-            steps {
-                script {
-                    def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+      stage('Deploy UAT') {
+    steps {
+        script {
+            def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 
-                    sh """
-                        docker stop todo-frontend-uat || true
-                        docker rm todo-frontend-uat || true
-                        docker run -d -p 8081:80 --name todo-frontend-uat --network $DOCKER_NETWORK todo-frontend:uat-${commit}
-                    """
-                }
-            }
+            sh """
+                docker stop todo-frontend-uat || true
+                docker rm todo-frontend-uat || true
+                docker run -d -p 8081:80 \
+                  --name todo-frontend-uat \
+                  --network $DOCKER_NETWORK \
+                  -e BACKEND_HOST=todo-backend-uat \
+                  -e BACKEND_PORT=5000 \
+                  todo-frontend:uat-${commit}
+            """
         }
+    }
+}
+
 
         stage('Manual Approval for Production') {
             steps {
