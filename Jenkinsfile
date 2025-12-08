@@ -26,44 +26,35 @@ pipeline {
                 script {
                     echo "⚙️ Building Frontend UAT Docker Image"
 
-                    // React environment for UAT build
-                    sh '''
-                        echo REACT_APP_API_URL=http://todo-backend-uat:5000 > .env
-                        echo REACT_APP_ENV=uat >> .env
-                    '''
-
-                    // NGINX dynamic backend variables for UAT
-                    sh '''
-                        export BACKEND_HOST=todo-backend-uat
-                        export BACKEND_PORT=5000
-                    '''
-
-                    // Build Docker image with commit tag
                     def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    sh "docker build -t todo-frontend:uat-${commit} ."
+                    sh """
+                        docker build \
+                            --build-arg REACT_APP_API_URL=http://todo-backend-uat:5000 \
+                            --build-arg REACT_APP_ENV=uat \
+                            -t todo-frontend:uat-${commit} .
+                    """
                 }
             }
         }
 
-      stage('Deploy UAT') {
-    steps {
-        script {
-            def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+        stage('Deploy UAT') {
+            steps {
+                script {
+                    def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 
-            sh """
-                docker stop todo-frontend-uat || true
-                docker rm todo-frontend-uat || true
-                docker run -d -p 8081:80 \
-                  --name todo-frontend-uat \
-                  --network $DOCKER_NETWORK \
-                  -e BACKEND_HOST=todo-backend-uat \
-                  -e BACKEND_PORT=5000 \
-                  todo-frontend:uat-${commit}
-            """
+                    sh """
+                        docker stop todo-frontend-uat || true
+                        docker rm todo-frontend-uat || true
+                        docker run -d -p 8081:80 \
+                          --name todo-frontend-uat \
+                          --network $DOCKER_NETWORK \
+                          -e BACKEND_HOST=todo-backend-uat \
+                          -e BACKEND_PORT=5000 \
+                          todo-frontend:uat-${commit}
+                    """
+                }
+            }
         }
-    }
-}
-
 
         stage('Manual Approval for Production') {
             steps {
@@ -76,25 +67,17 @@ pipeline {
                 script {
                     echo "⚙️ Building Frontend Production Docker Image"
 
-                    // React environment for PROD build
-                    sh '''
-                        echo REACT_APP_API_URL=http://todo-backend-prod:5000 > .env
-                        echo REACT_APP_ENV=prod >> .env
-                    '''
-
-                    // NGINX dynamic backend variables for Production
-                    sh '''
-                        export BACKEND_HOST=todo-backend-prod
-                        export BACKEND_PORT=5000
-                    '''
-
                     def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 
-                    // Backup for rollback
+                    // Backup previous production image for rollback
                     sh "docker tag todo-frontend-prod todo-frontend:prod_previous || true"
 
-                    // Build image
-                    sh "docker build -t todo-frontend:prod-${commit} ."
+                    sh """
+                        docker build \
+                            --build-arg REACT_APP_API_URL=http://todo-backend-prod:5000 \
+                            --build-arg REACT_APP_ENV=prod \
+                            -t todo-frontend:prod-${commit} .
+                    """
                 }
             }
         }
