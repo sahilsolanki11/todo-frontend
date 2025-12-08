@@ -20,16 +20,14 @@ RUN npm run build
 FROM nginx:alpine
 
 # Enable envsubst templating
-RUN mkdir -p /etc/nginx/templates
+RUN apk add --no-cache bash gettext
 
-# Copy nginx template
+RUN mkdir -p /etc/nginx/templates
 COPY nginx.conf /etc/nginx/templates/default.conf.template
 
-# Copy built React files
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Expose port
-EXPOSE 80
+# Replace env variables at runtime
+CMD envsubst '$BACKEND_HOST $BACKEND_PORT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
 
-# Start nginx with envsubst
-CMD envsubst '\$BACKEND_HOST \$BACKEND_PORT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
+EXPOSE 80
